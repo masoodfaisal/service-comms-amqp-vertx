@@ -3,8 +3,8 @@ Using AMQP to communicate between services
 
 
 ##Setup
-Download and install docker
-Download and install vegeta
+* Download and install docker
+* Download and install vegeta
 
 
 ## Run Interconnect server
