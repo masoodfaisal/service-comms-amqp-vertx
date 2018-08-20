@@ -2,7 +2,7 @@ Using AMQP to communicate between services
 ------------------------------------------
 
 
-##Setup
+## Setup
 * Download and install docker
 * Download and install vegeta
 
