@@ -1,31 +1,34 @@
 package com.faisal.vertx.amqp.frontend;
 
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
+import io.vertx.rxjava.core.AbstractVerticle;
+import io.vertx.rxjava.core.RxHelper;
+import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.eventbus.EventBus;
+import io.vertx.rxjava.core.eventbus.Message;
+import io.vertx.rxjava.core.eventbus.MessageConsumer;
+import io.vertx.rxjava.ext.web.Router;
+import io.vertx.rxjava.ext.web.RoutingContext;
+import rx.Single;
 
 import java.time.Instant;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 
 
 public class MainVerticle extends AbstractVerticle {
 
+
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
 
-        vertx.deployVerticle(new MainVerticle());
-        vertx.deployVerticle(new AmqpSender());
 
-
+        RxHelper.deployVerticle(vertx, new AmqpSender())
+                .toCompletable()
+                .andThen(RxHelper.deployVerticle(vertx, new MainVerticle()))
+                .subscribe(s -> System.out.println("Started..."));
     }
+
 
     @Override
     public void start() {
@@ -48,36 +51,12 @@ public class MainVerticle extends AbstractVerticle {
                 .put("eventGeneratedTime", Instant.now().toEpochMilli());
 
 
-        eventBus.send(AmqpSender.SEND_REQUEST_TO_BACKEND_CHANNEL, jsonObject, (Handler<AsyncResult<Message<JsonObject>>>) asyncResult -> {
-            if (asyncResult.succeeded()) {
-                JsonObject eventDataResponse = asyncResult.result().body();
-                routingContext.response().end(eventDataResponse.encode());
-            } else {
-                routingContext.response().end("Some shit happened");
-            }
-
-        });
-
-
-
-//        eventBus.send(AmqpSender.SEND_REQUEST_TO_BACKEND_CHANNEL, jsonObject, (AsyncResult<Message<JsonObject>> asyncResult) -> this.getResponse(asyncResult, routingContext));
-
-
+        eventBus.rxSend(AmqpSender.SEND_REQUEST_TO_BACKEND_CHANNEL, jsonObject)
+                .cast(Message.class)
+                .doOnError(throwable -> routingContext.response().end(throwable.getMessage()))
+                .doOnSuccess(objectMessage -> routingContext.response().end(objectMessage.body().toString()))
+                .subscribe();
     }
-
-
-/*    private void getResponse(AsyncResult<Message<JsonObject>> asyncResult, RoutingContext routingContext){
-        if (asyncResult.succeeded()) {
-            JsonObject eventDataResponse = asyncResult.result().body();
-            routingContext.response().end(eventDataResponse.encode());
-        } else {
-            routingContext.response().end("Some shit happened");
-        }
-    }*/
-
-
-
-
 
 
 }

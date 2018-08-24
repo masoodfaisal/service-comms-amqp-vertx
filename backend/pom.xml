@@ -10,7 +10,7 @@
 
   <properties>
     <vertx.version>3.5.3</vertx.version>
-    <main.verticle>com.faisal.vertx.amqp.backend.MainVerticle</main.verticle>
+    <main.verticle>com.faisal.vertx.amqp.backend.Main</main.verticle>
   </properties>
 
   <dependencyManagement>
@@ -34,7 +34,10 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-amqp-bridge</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-rx-java</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -64,7 +67,7 @@
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
-              <mainClass>com.faisal.vertx.amqp.backend.MainVerticle</mainClass>
+              <mainClass>com.faisal.vertx.amqp.backend.Main</mainClass>
             </manifest>
           </archive>
         </configuration>

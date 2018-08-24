@@ -1,51 +1,49 @@
 package com.faisal.vertx.amqp.frontend;
 
 
-import io.vertx.amqpbridge.AmqpBridge;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.eventbus.MessageProducer;
 import io.vertx.core.json.JsonObject;
-
+import io.vertx.rxjava.amqpbridge.AmqpBridge;
+import io.vertx.rxjava.core.AbstractVerticle;
+import io.vertx.rxjava.core.eventbus.Message;
+import io.vertx.rxjava.core.eventbus.MessageConsumer;
+import io.vertx.rxjava.core.eventbus.MessageProducer;
 
 public class AmqpSender extends AbstractVerticle {
 
 
     @Override
     public void start() {
-        EventBus eventBus = vertx.eventBus();
+
         AmqpBridge amqpBridge = AmqpBridge.create(vertx);
 
 
-        amqpBridge.start(AMQP_SERVER_LOCATION, AMQP_SERVER_PORT, amqpBridgeStartResult -> {
+        amqpBridge.rxStart(AMQP_SERVER_LOCATION, AMQP_SERVER_PORT)
+                .doOnSuccess(amqpBridge1 -> this.eventResponse(amqpBridge1.createProducer(AMQP_ADDRESS),
+                        vertx.eventBus().consumer(SEND_REQUEST_TO_BACKEND_CHANNEL)))
+                .doOnError(throwable -> System.out.printf(throwable.getMessage()))
+                .subscribe();
 
-            if (amqpBridgeStartResult.succeeded()) {
-                MessageProducer<JsonObject> amqpMessageProducer = amqpBridge.createProducer(AMQP_ADDRESS);
-                eventBus.consumer(SEND_REQUEST_TO_BACKEND_CHANNEL, (Handler<Message<JsonObject>>) message -> {
-                    JsonObject sourceEventData = message.body();
-                    JsonObject amqpData = new JsonObject()
-                            .put("body", sourceEventData);
-                    System.out.println("Sending --- " + sourceEventData);
+
+    }
+
+    public void eventResponse(MessageProducer<JsonObject> amqpMessageProducer, MessageConsumer<JsonObject> messageConsumer) {
+        messageConsumer.toObservable()
+                .doOnError(throwable -> System.out.printf(throwable.getCause().getMessage()))
+                .subscribe(jsonObjectMessage -> {
+                    JsonObject amqpData = new JsonObject().put("body", jsonObjectMessage.body());
                     amqpMessageProducer
                             .send(amqpData, (Handler<AsyncResult<Message<JsonObject>>>) messageAsyncResult -> {
                                 System.out.println("Got response ---" + messageAsyncResult.result());
                                 System.out.println("Got response BODY---" + messageAsyncResult.result().body());
                                 JsonObject responseFromAMQPServer = messageAsyncResult.result().body();
-                                message.reply(responseFromAMQPServer);
+                                jsonObjectMessage.rxReply(new JsonObject().put("serverResponse", responseFromAMQPServer.getValue("body")))
+                                        .doOnSuccess(objectMessage -> System.out.println("Delievred "+ objectMessage))
+                                        .doOnError(throwable -> System.out.println(throwable.getCause().getMessage()))
+                                        .subscribe();
                             });
-
-
                 });
-            } else {
-                System.out.printf(amqpBridgeStartResult.cause().getMessage());
-            }
-
-        });
-
-
     }
 
 
