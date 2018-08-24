@@ -52,7 +52,7 @@ public class MainVerticle extends AbstractVerticle {
 
 
         eventBus.rxSend(AmqpSender.SEND_REQUEST_TO_BACKEND_CHANNEL, jsonObject)
-                .cast(Message.class)
+
                 .doOnError(throwable -> routingContext.response().end(throwable.getMessage()))
                 .doOnSuccess(objectMessage -> routingContext.response().end(objectMessage.body().toString()))
                 .subscribe();
