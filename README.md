@@ -34,7 +34,7 @@ java -jar target/frontend-service-full.jar
 
 In another terminal
 ```bash
-cd frontend 
+cd backend 
 mvn clean install
 java -jar target/backend-service-full.jar
 ```
