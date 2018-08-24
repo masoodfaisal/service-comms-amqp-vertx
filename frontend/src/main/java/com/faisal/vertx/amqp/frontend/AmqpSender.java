@@ -41,10 +41,7 @@ public class AmqpSender extends AbstractVerticle {
                     System.out.println("Got response ---" + messageAsyncResult.result());
                     System.out.println("Got response BODY---" + messageAsyncResult.result().body());
                     JsonObject responseFromAMQPServer = messageAsyncResult.result().body();
-                    jsonObjectMessage.rxReply(new JsonObject().put("serverResponse", responseFromAMQPServer.getValue("body")))
-                            .doOnSuccess(objectMessage -> System.out.println("Delivered "+ objectMessage))
-                            .doOnError(throwable -> System.out.println(throwable.getCause().getMessage()))
-                            .subscribe();
+                    jsonObjectMessage.reply(new JsonObject().put("serverResponse", responseFromAMQPServer.getValue("body")));
                 });
     }
 
