@@ -31,18 +31,20 @@ public class AmqpSender extends AbstractVerticle {
     public void eventResponse(MessageProducer<JsonObject> amqpMessageProducer, MessageConsumer<JsonObject> messageConsumer) {
         messageConsumer.toObservable()
                 .doOnError(throwable -> System.out.printf(throwable.getCause().getMessage()))
-                .subscribe(jsonObjectMessage -> {
-                    JsonObject amqpData = new JsonObject().put("body", jsonObjectMessage.body());
-                    amqpMessageProducer
-                            .send(amqpData, (Handler<AsyncResult<Message<JsonObject>>>) messageAsyncResult -> {
-                                System.out.println("Got response ---" + messageAsyncResult.result());
-                                System.out.println("Got response BODY---" + messageAsyncResult.result().body());
-                                JsonObject responseFromAMQPServer = messageAsyncResult.result().body();
-                                jsonObjectMessage.rxReply(new JsonObject().put("serverResponse", responseFromAMQPServer.getValue("body")))
-                                        .doOnSuccess(objectMessage -> System.out.println("Delievred "+ objectMessage))
-                                        .doOnError(throwable -> System.out.println(throwable.getCause().getMessage()))
-                                        .subscribe();
-                            });
+                .subscribe(jsonObjectMessage -> this.makeRemoteCall(amqpMessageProducer, jsonObjectMessage));
+    }
+
+
+    public void makeRemoteCall(MessageProducer<JsonObject> amqpMessageProducer, Message<JsonObject> jsonObjectMessage){
+        JsonObject amqpData = new JsonObject().put("body", jsonObjectMessage.body());
+        amqpMessageProducer.send(amqpData, (Handler<AsyncResult<Message<JsonObject>>>) messageAsyncResult -> {
+                    System.out.println("Got response ---" + messageAsyncResult.result());
+                    System.out.println("Got response BODY---" + messageAsyncResult.result().body());
+                    JsonObject responseFromAMQPServer = messageAsyncResult.result().body();
+                    jsonObjectMessage.rxReply(new JsonObject().put("serverResponse", responseFromAMQPServer.getValue("body")))
+                            .doOnSuccess(objectMessage -> System.out.println("Delivered "+ objectMessage))
+                            .doOnError(throwable -> System.out.println(throwable.getCause().getMessage()))
+                            .subscribe();
                 });
     }
 
