@@ -36,6 +36,12 @@ public class AmqpServer extends AbstractVerticle {
 
 
     private static final String AMQP_ADDRESS = "BACKEND_SERVICE";
-    private static final String AMQP_SERVER_LOCATION = "localhost";
+    private static final String AMQP_SERVER_LOCATION = env("AMQP_SERVER_LOCATION", "localhost");
     private static final int AMQP_SERVER_PORT = 5672;
+
+    private static String env(final String key, final String defaultValue) {
+
+        final String value = System.getenv(key);
+        return value != null ? value : defaultValue;
+    }
 }
