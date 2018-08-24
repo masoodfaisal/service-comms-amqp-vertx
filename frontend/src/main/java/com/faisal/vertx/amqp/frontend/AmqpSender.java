@@ -49,8 +49,8 @@ public class AmqpSender extends AbstractVerticle {
     private static final String AMQP_ADDRESS = "BACKEND_SERVICE";
 
     public static final String SEND_REQUEST_TO_BACKEND_CHANNEL = "LOCAL_EVENT_BUS";
-    private final String AMQP_SERVER_LOCATION = "localhost";
-    private final int AMQP_SERVER_PORT = 5672;
+    private static final String AMQP_SERVER_LOCATION = "localhost";
+    private static final int AMQP_SERVER_PORT = 5672;
 }
 
 

@@ -17,7 +17,7 @@ public class AmqpServer extends AbstractVerticle {
 
         amqpBridge.rxStart(AMQP_SERVER_LOCATION, AMQP_SERVER_PORT)
                 .doOnSuccess(amqpBridge1 -> this.processMessage(amqpBridge.createConsumer(AMQP_ADDRESS)))
-                .doOnError(throwable -> System.out.println(throwable.getCause().getMessage()))
+                .doOnError(throwable -> System.out.println(throwable.getMessage()))
                 .subscribe();
 
     }
@@ -35,7 +35,7 @@ public class AmqpServer extends AbstractVerticle {
     }
 
 
-    private final String AMQP_ADDRESS = "BACKEND_SERVICE";
-    private final String AMQP_SERVER_LOCATION = "localhost";
-    private final int AMQP_SERVER_PORT = 5672;
+    private static final String AMQP_ADDRESS = "BACKEND_SERVICE";
+    private static final String AMQP_SERVER_LOCATION = "localhost";
+    private static final int AMQP_SERVER_PORT = 5672;
 }
