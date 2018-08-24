@@ -2,12 +2,17 @@ Using AMQP to communicate between services
 ------------------------------------------
 
 
-## Setup
+## Quick start
+```
+docker-compose up
+```
+
+## Manual Setup
 * Download and install docker
 * Download and install vegeta
 
 
-## Run Interconnect server
+### Run Interconnect server
 Run AMQP Interconnect locally
 ```bash
 docker run -it -p 5672:5672 ceposta/qdr
@@ -24,7 +29,7 @@ qdstat -l
 
 ```
 
-## Run applications
+### Run applications
 ```bash
 cd frontend 
 mvn clean install

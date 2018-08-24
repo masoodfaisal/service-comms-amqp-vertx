@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      AMQP_SERVER_LOCATION: amqp
+    ports:
+      - target: 8080
+        published: 8080
+  backend:
+    build:
+      context: ./backend
+    environment:
+      AMQP_SERVER_LOCATION: amqp
+  amqp:
+    image: ceposta/qdr
