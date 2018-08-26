@@ -1,4 +1,4 @@
-Using AMQP to communicate between services
+Using AMQP to communicate between micro-services using Vert.x
 ------------------------------------------
 
 
